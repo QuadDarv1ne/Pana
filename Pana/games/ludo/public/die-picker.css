@@ -1,0 +1,38 @@
+/* Full-page wardrobe for dice. The lobby stays connected behind this route. */
+.dice-page { position:fixed;inset:0;z-index:900;display:grid;grid-template-rows:auto minmax(180px,1fr) auto minmax(130px,24dvh);gap:18px;padding:28px 40px;background:repeating-linear-gradient(120deg,#100c28 0 80px,#15102e 80px 160px);color:var(--pk-text); }
+.dice-page[hidden] { display:none; }
+.viewing-dice > :not(.dice-page):not(script):not(style) { visibility:hidden; }
+.dice-header { display:flex;align-items:center;gap:24px; }
+.dice-header h1 { margin:0;font:900 clamp(24px,3vw,42px) var(--pk-display);text-transform:uppercase; }
+.dice-balance { margin-left:auto;font:900 32px var(--pk-display);color:var(--pk-yellow); }
+.dice-balance,.dice-status { display:flex;gap:8px;align-items:center; }
+.dice-balance svg { width:36px;height:40px; }
+.dice-status svg { width:18px;height:20px; }
+.dice-stage { position:relative;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,30%); }
+.dice-canvas { width:100%;height:100%;min-width:0;min-height:0;touch-action:none; }
+.dice-detail { align-self:center;padding:20px; }
+.dice-detail h2 { margin:0 0 28px;font:900 clamp(30px,4vw,64px)/1.05 var(--pk-display);text-transform:uppercase;overflow-wrap:anywhere; }
+.dice-detail .pk-btn { min-width:180px; }
+.dice-toolbar { display:flex;gap:12px;align-items:center; }
+.dice-toolbar input { width:260px;min-width:100px;padding:12px;border:1px solid var(--pk-line);background:var(--pk-deep);color:var(--pk-text);font:inherit; }
+.dice-count { margin-left:auto;font-size:13px; }
+.dice-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));align-content:start;gap:10px;overflow:auto;min-height:0;padding:3px; }
+.dice-choice { display:flex;flex-direction:column;align-items:center;gap:6px;min-height:140px;padding:12px 8px;border:2px solid var(--pk-line);border-radius:0;background:var(--pk-deep);color:var(--pk-text);font:inherit;cursor:pointer; }
+.dice-choice[hidden] { display:none; }
+.dice-choice[aria-pressed="true"] { border-color:var(--pk-yellow);background:#292044; }
+.dice-choice:focus-visible { outline:3px solid var(--pk-yellow);outline-offset:1px; }
+.dice-choice strong { font-size:14px; }
+.dice-status { font-size:12px; }
+.dice-error:empty { display:none; }
+.dice-preview { position:relative;width:64px;height:65px;display:block;flex:none; }
+.dice-face { position:absolute;width:35px;height:35px;border-radius:0; }
+.dice-face-0 { left:15px;top:0;transform:rotate(-30deg) skewX(30deg) scaleY(.866); }
+.dice-face-1 { left:0;top:26px;transform:skewY(30deg) scaleX(.866); }
+.dice-face-2 { left:30px;top:26px;transform:skewY(-30deg) scaleX(.866); }
+
+@media(max-width:600px){
+ .dice-page{padding:14px;gap:12px;grid-template-rows:auto minmax(200px,1fr) auto minmax(140px,30dvh)}
+ .dice-header{gap:12px}.dice-header h1{font-size:24px}.dice-balance{font-size:23px}.dice-balance svg{width:26px;height:30px}
+ .dice-stage{grid-template-columns:1fr;grid-template-rows:minmax(120px,1fr) auto}.dice-detail{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0}.dice-detail h2{font-size:28px;margin:0}.dice-detail .pk-btn{min-width:0}.dice-error{position:absolute;bottom:0}
+ .dice-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.dice-choice{padding:10px 3px;min-height:132px}.dice-choice strong{font-size:12px}.dice-toolbar input{flex:1;width:0}.dice-count{display:none}#change-dice{font-size:12px}
+}

@@ -11,6 +11,9 @@ becomes the GitHub release's notes.
 - **Los mangos tienen el mismo icono en toda la app.**
   Carteras, precios y premios usan la fruta ilustrada de Conuco.
 
+- **Cada pana juega Ludo con su propio dado.**
+  Cambiar dado abre una página con vista 3D y búsqueda junto a Cambiar pana. La mesa muestra el dado del jugador en turno y admite catálogos conectados a una tienda.
+
 ## 0.13.1 - 2026-11-15
 
 - **La portada del inicio se extiende detrás del menú.**

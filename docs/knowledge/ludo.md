@@ -335,3 +335,20 @@ entries. `authored.browser.js` scrubs every variant on four-, five- and
 six-player boards, including reverse sampling, crowded endpoints, finite
 geometry and interruption cleanup. `authored-previews.browser.js` builds and
 renders every registered preview with the actual runtime.
+
+## Personal dice
+
+Cambiar dado sits beside Cambiar pana and opens the full-page `#dados=<id>` showroom with a rotatable
+3D mesh, search and an ownership filter. The starter cream/mango catalog keeps its existing
+local ownership. Optional integrations provide `globalThis.PanaDice`: `ready`,
+`looks` (`id`, `name`, `cost`), `skin(id)` (`mat`, `face`, optional `glow`),
+`shop` (`owns`, `equipped`, async `equip`/`buy`), `refresh` and `storeUrl(id, returnUrl)`.
+The game waits for the provider before joining; locked store links navigate in the same
+tab with a room-preserving return URL, and the picker refreshes on focus. The public repository contains only
+the generic contract and starter appearances.
+
+`LudoRoom.hello()` carries each selected look through the shared member
+lifecycle. Snapshots retain it per seat and seat resizing preserves it.
+The scene uses the presented turn, including the outgoing actor's pause, so
+the next die never replaces an unfinished throw. Cosmetics never advance RNG.
+Unknown looks fall back to cream; models dispose glow maps as well as faces.

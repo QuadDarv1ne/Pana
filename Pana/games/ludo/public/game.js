@@ -15,19 +15,22 @@ import { createRoomOptions } from '/engine/room-options.js';
 import { LUDO_OPTIONS, defaultLudoOptions } from './options.js';
 import { createMangoWallet } from '/engine/mangos.js';
 import { icon } from '/engine/icons.js';
-import { createDieShop, DEFAULT_DIE, MANGO_DIE } from './die-shop.js';
+import { createDieShop } from './die-shop.js';
 import { createFlipControl } from '/engine/play/flip-control.js';
 import { canFlip } from '/engine/play/flip-rules.js';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search);
 const code=roomFromUrl()||newRoomCode();
-params.set('room',code);history.replaceState(null,'',`${location.pathname}?${params}`);
+params.set('room',code);history.replaceState(null,'',`${location.pathname}?${params}${location.hash}`);
 let world=null,stopped=false,topView=false;
-const room=new LudoRoom({code,name:loadName(),avatar:loadAvatar(),onState:render,
+await globalThis.PanaDice?.ready?.catch(()=>{});
+const wallet=createMangoWallet(undefined,{source:'ludo'}),dieShop=createDieShop({wallet});
+let diePicker=null;
+const room=new LudoRoom({code,name:loadName(),avatar:loadAvatar(),dieLook:dieShop.equipped(),onState:render,
   onStatus(text,failed=false){$('connection').textContent=text;$('practice').hidden=!failed;render(room.state);},
 });
 const roomOptions=createRoomOptions($('room-options'),{title:loc('Ludo'),fields:LUDO_OPTIONS,
   change:options=>room.action('options',{options}),reset:()=>room.action('options',{options:defaultLudoOptions()})});
-const menu=createGameMenu({ pad: { buttons: true, keys: { lt: ['KeyF', loc('Voltear la mesa')], x: ['Space', loc('Agitar el dado; suelta para tirar')], rt: ['Space', loc('Agitar el dado; suelta para tirar')] } },title:loc('Ludo · Pana'),sound,orientation:'libre',
+const menu=createGameMenu({ canOpen:()=>!document.body.classList.contains('viewing-dice'),pad: { buttons: true, keys: { lt: ['KeyF', loc('Voltear la mesa')], x: ['Space', loc('Agitar el dado; suelta para tirar')], rt: ['Space', loc('Agitar el dado; suelta para tirar')] } },title:loc('Ludo · Pana'),sound,orientation:'libre',
   note:()=>room.members.size>1?loc('La partida continúa mientras estás en el menú.'):loc('La partida está en pausa. Los bots te esperan.'),
   invite:()=>room.offline?null:inviteUrl(code),
 });
@@ -40,20 +43,7 @@ $('start').onclick=$('again').onclick=()=>{sound.unlock();room.action('start');}
 const thrower=bindDiceThrow({button:$('roll'),surface:$('world'),canThrow:canRoll,
   onStart:()=>sound.unlock(),onThrow:power=>{world?.shakeDie(0);act('roll',{power});},onCancel:()=>world?.shakeDie(0)});
 $('practice').onclick=()=>room.practice();
-const wallet=createMangoWallet(undefined,{source:'ludo'}),dieShop=createDieShop({wallet});
-function renderDieShop(){
-  const {action,cost,missing}=dieShop.offer(MANGO_DIE),label=document.createElement('span');
-  label.textContent=action==='buy'?loc('Comprar dado de mango · {n}',{n:cost}):action==='short'?loc('Dado de mango · te faltan {n}',{n:missing}):action==='equip'?loc('Usar dado de mango'):loc('Guardar dado de mango');
-  $('die-shop').replaceChildren(icon('mango'),label);$('die-shop').disabled=action==='short';$('die-shop').setAttribute('aria-pressed',String(action==='unequip'));
-}
-$('die-shop').onclick=()=>{
-  sound.unlock();const {action}=dieShop.offer(MANGO_DIE);
-  if(action==='buy'&&dieShop.buy(MANGO_DIE))shout(loc('¡Dado de mango en la mesa!'),{tone:'yellow',ms:1500});
-  else if(action==='equip')dieShop.equip(MANGO_DIE);
-  else if(action==='unequip')dieShop.equip(DEFAULT_DIE);
-  world?.setDieLook(dieShop.equipped());renderDieShop();
-};
-renderDieShop();wallet.ready.then(renderDieShop);const stopWallet=wallet.onChange(renderDieShop);
+import('./die-picker.js').then(({createDiePicker})=>{if(!stopped)diePicker=createDiePicker($('die-shop'),{shop:dieShop,wallet,change:look=>room.selectDie(look)});});
 $('view').onclick=()=>{topView=!topView;world?.setView(topView);$('view').textContent=topView?loc('Vista de mesa'):loc('Vista desde arriba');$('view').setAttribute('aria-pressed',String(topView));};
 const buttons=Array.from({length:4},(_,piece)=>{
   const button=document.createElement('button');button.className='pk-btn piece-button';button.dataset.piece=piece;
@@ -77,6 +67,7 @@ function render(rawState){
   const state=presentedState(rawState);
   const lobby=state.phase==='lobby',ended=state.phase==='finished',seat=room.seat;
   roomOptions.update(state.options,lobby&&room.isHost);
+  if(!lobby)diePicker?.close();
   if(!lobby&&roomOptions.isOpen)roomOptions.close();
   document.querySelector('.rules-summary').textContent=state.options.entry==='six'?loc('Saca un seis para salir. Captura a tus rivales y lleva tus cuatro fichas al centro con el número exacto.'):loc('Sal con uno o seis. Captura a tus rivales y lleva tus cuatro fichas al centro con el número exacto.');
   if(state.options.assistedEntry)document.querySelector('.rules-summary').textContent+=' '+loc('Salida asistida: ayuda tras un límite aleatorio de tres a cinco intentos sin salir.');
@@ -121,5 +112,5 @@ render(room.state);room.connect();
 export const sceneReady=import('./scene.js').then(async({createLudoScene})=>{
   if(stopped)return;world=createLudoScene($('world'),{onPiece:piece=>act('move',{piece}),onCapture:capture,onStarter:(kind,power)=>{if(!menu.isOpen){sound.unlock();room.action('starter',{cacho:kind,power});}},dieLook:dieShop.equipped()});await prepareScene(world);render(room.state);$('loading').hidden=true;
 }).catch(error=>{console.error(error);$('loading-copy').textContent=loc('No pudimos abrir la mesa. Comprueba tu conexión y WebGL.');const button=document.createElement('button');button.className='pk-btn';button.textContent=loc('Reintentar');button.onclick=()=>location.reload();$('loading').append(button);throw error;});
-addEventListener('pagehide',()=>{stopped=true;flip.dispose();stopWallet();clearInterval(timer);thrower.dispose();hud.dispose();room.dispose();world?.dispose();},{once:true});
+addEventListener('pagehide',()=>{stopped=true;flip.dispose();diePicker?.dispose();clearInterval(timer);thrower.dispose();hud.dispose();room.dispose();world?.dispose();},{once:true});
 if(params.has('debug'))window.ludoDebug={room,menu,chooseMove,legalMoves,thrower,get world(){return world;}};

@@ -1,3 +1,4 @@
+import { dieLook } from './die-shop.js';
 import { automaticMoveDelay, createLandingGate, hostTick, pauseTick, rollKey } from './dice-timing.js';
 import { TableRoom } from '/engine/table-room.js';
 import { loc } from '/engine/i18n.js';
@@ -5,7 +6,7 @@ import { LudoGame, SEAT_CHOICES, chooseMove } from './rules.js';
 
 export class LudoRoom extends TableRoom {
   constructor(options) {
-    super({ ...options, game: 'ludo', protocol: 'ludo-v7' }, {
+    super({ ...options, game: 'ludo', protocol: 'ludo-v8' }, {
       // A new table keeps the lobby's settings, its seat count included.
       fresh: prev => { const game = new LudoGame(Date.now(), prev?.options?.seats); if (prev?.options) game.options = { ...prev.options, seats: game.players.length }; return game.snapshot(); },
       restore: (state, members) => LudoGame.restore(state, members),
@@ -13,6 +14,7 @@ export class LudoRoom extends TableRoom {
       accept: (game, id, data, hostId) => game.accept(id, data, hostId),
       valid: (state) => SEAT_CHOICES.includes(state?.players?.length),
     });
+    this.selectedDie = dieLook(options.dieLook).id;
     this.landings = createLandingGate(); this.reportedRoll = null;
   }
   receive(id, data) {
@@ -26,7 +28,15 @@ export class LudoRoom extends TableRoom {
     this.reportedRoll = roll;
     if (this.isHost) this.landings.land(roll, this.id); else this.send({ kind: 'landed', roll }, 'host');
   }
-  seatMembers() { for (const m of this.members.values()) this.game.addPlayer(m.id, m.name, m.avatar); }
+  hello() { return { dieLook: this.selectedDie }; }
+  selectDie(look) {
+    this.selectedDie = dieLook(look).id;
+    const member = this.members.get(this.id);
+    if (member) member.dieLook = this.selectedDie;
+    this.send({ kind: 'hello', avatar: this.avatar, ...this.hello() });
+    if (this.isHost && this.game) { this.seatMembers(); this.publish(); }
+  }
+  seatMembers() { for (const m of this.members.values()) this.game.addPlayer(m.id, m.name, m.avatar, m.id === this.id ? this.selectedDie : m.dieLook); }
   unseat(id) { this.game.removePlayer(id); }
   // A local table keeps the lobby's seat count: you and three to five bots.
   practice() { super.practice(loc('Mesa local · tú y {n} bots', { n: this.state.players.length - 1 })); }

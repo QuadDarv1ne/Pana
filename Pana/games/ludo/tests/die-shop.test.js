@@ -82,7 +82,7 @@ test('a purchase in another tab is not paid twice', () => {
 });
 
 test('a bad save falls back to the cream die', () => {
-  for (const raw of ['not json', 'null', '{"owned":"mango","equipped":"mango"}', '{"owned":[],"equipped":"mango"}', '{"owned":["oro"],"equipped":"oro"}']) {
+  for (const raw of ['not json', 'null', '{"owned":"mango","equipped":"mango"}', '{"owned":[],"equipped":"mango"}', '{"owned":["unknown"],"equipped":"unknown"}']) {
     const storage = fakeStorage();
     storage.setItem(DIE_SHOP_KEY, raw);
     const { shop } = open(0, storage);
@@ -99,4 +99,19 @@ test('blocked storage still sells for the session', () => {
   assert.equal(shop.equipped(), MANGO_DIE);
   assert.equal(shop.buy(MANGO_DIE), true);
   assert.equal(wallet.peek(), 0);
+});
+
+
+test('each player keeps a validated die through snapshots and seat changes', async () => {
+  const { LudoGame } = await import('../public/rules.js');
+  const game = new LudoGame(123, 6);
+  game.addPlayer(1, 'Ana', {}, 'mango');game.addPlayer(2, 'Luis', {}, 'crema');
+  const seed=game.rng;
+  game.addPlayer(2, 'Luis', {}, 'mango');
+  assert.equal(game.rng,seed);
+  const copy=LudoGame.restore(game.snapshot(),new Map([[1,{id:1,name:'Ana',avatar:{}}],[2,{id:2,name:'Luis',avatar:{}}]]));
+  assert.deepEqual(copy.players.slice(0,2).map(p=>p.dieLook),['mango','mango']);
+  copy.seat(4);assert.equal(copy.players[1].dieLook,'mango');
+  copy.removePlayer(1);copy.addPlayer(3,'Eva',{},'unknown');
+  assert.equal(copy.players[0].dieLook,DEFAULT_DIE);
 });

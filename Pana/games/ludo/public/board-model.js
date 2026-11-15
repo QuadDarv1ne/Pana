@@ -4,6 +4,7 @@ import { disposeModel } from '/engine/models/props/game-table.js';
 import { COLORS, RING, STAR_YARD, rotateCell, cellFor, ludoTrack, starMetrics, armAngle } from './rules.js';
 import { finishBoard, finishPawn } from './studio-finish.js';
 import { dieLook } from './die-shop.js';
+import { dieSkin } from './die-appearance.js';
 
 export const STEP = .36;
 export const boardPoint = (seat, progress, piece, seats = 4) => cellFor(seat, progress, piece, seats).map(v => (v - 7) * STEP);
@@ -111,18 +112,17 @@ export function createLudoPawn({ seat = 0, number = 1 } = {}) {
   const halo=add(group,new THREE.TorusGeometry(.19,.025,8,32),material('#ffc629'),0,.018);halo.rotation.x=-Math.PI/2;halo.visible=false;
   group.userData.halo=halo; finishPawn(group,seat*4+number); return finish(group);
 }
-function dieTexture(value,skin) {
-  const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d');
-  const face=ctx.createLinearGradient(0,0,128,128);face.addColorStop(0,skin.face[0]);face.addColorStop(1,skin.face[1]);ctx.fillStyle=face;ctx.fillRect(0,0,128,128);
-  if(skin.trim){ctx.strokeStyle=skin.trim;ctx.lineWidth=6;ctx.strokeRect(9,9,110,110);}
-  ctx.fillStyle=skin.pip;
-  const points = {1:[[0,0]],2:[[-1,-1],[1,1]],3:[[-1,-1],[0,0],[1,1]],4:[[-1,-1],[1,-1],[-1,1],[1,1]],5:[[-1,-1],[1,-1],[0,0],[-1,1],[1,1]],6:[[-1,-1],[1,-1],[-1,0],[1,0],[-1,1],[1,1]]};
-  for(const [x,y] of points[value]){ctx.beginPath();ctx.arc(64+x*31,64+y*31,10,0,Math.PI*2);ctx.fill();}
+function dieTexture(value, skin, glow = false) {
+  const c=document.createElement('canvas');c.width=c.height=256;
+  skin[glow?'glow':'face'](c.getContext('2d'),value,256);
   const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
 }
 export function createLudoDie({ look } = {}) {
   const group=new THREE.Group();group.name='Dado de Ludo'; // i18n-ignore: object name for Studio
-  const skin=dieLook(look);
-  add(group,new RoundedBoxGeometry(.43,.43,.43,3,.045),[3,4,1,6,2,5].map(v=>new THREE.MeshPhysicalMaterial({map:dieTexture(v,skin),roughness:skin.roughness,clearcoat:1,clearcoatRoughness:.2})),0,.215);
-  return finish(group);
+  const definition=dieLook(look),skin=dieSkin(definition.id);group.userData.look=definition.id;
+  add(group,new RoundedBoxGeometry(.43,.43,.43,3,.045),[3,4,1,6,2,5].map(v=>new THREE.MeshPhysicalMaterial({map:dieTexture(v,skin),roughness:skin.mat.roughness,metalness:skin.mat.metalness??0,clearcoat:skin.mat.clearcoat??0,transparent:!!skin.mat.opacity,opacity:skin.mat.opacity??1,...(skin.glow?{emissiveMap:dieTexture(v,skin,true),emissive:0xffffff,emissiveIntensity:skin.mat.emissive}:{}),clearcoatRoughness:.2})),0,.215);
+  finish(group);
+  const dispose=group.userData.dispose;
+  group.userData.dispose=()=>{group.traverse(mesh=>{for(const mat of Array.isArray(mesh.material)?mesh.material:[])mat.emissiveMap?.dispose();});dispose();};
+  return group;
 }

@@ -1,3 +1,4 @@
+import { dieLook } from './die-shop.js';
 // Progress is relative to each seat: -1 yard, 0…lap ring, the next five the
 // private lane, home after it. Four seats: lap 50, home 56 (ludoTrack(n)).
 // A match opens with the 'starter' phase: ¿Quién empieza? (engine/play/quien-empieza-rules.js)
@@ -129,20 +130,21 @@ export class LudoGame {
     const game = Object.assign(new LudoGame(), JSON.parse(JSON.stringify(state)));
     game.options = { ...defaultLudoOptions(), ...game.options, seats: game.players.length };
     for (const p of game.players) if (p.id !== null && !members.has(p.id)) game.removePlayer(p.id);
-    for (const m of members.values()) game.addPlayer(m.id, m.name, m.avatar);
+    for (const m of members.values()) game.addPlayer(m.id, m.name, m.avatar, m.dieLook);
     return game;
   }
-  addPlayer(id, name, avatar = {}) {
+  addPlayer(id, name, avatar = {}, look) {
     // A pana arriving at a full lobby pulls up another chair, up to six.
     if (this.phase === 'lobby' && !this.players.some(p => p.id === id || p.id === null)) this.seat(this.players.length + 1);
     const p = this.players.find(p => p.id === id) || this.players.find(p => p.id === null);
     if (!p) return;
-    if (p.id === id && p.name === name && JSON.stringify(p.avatar) === JSON.stringify(avatar)) return;
-    Object.assign(p, { id, name, avatar }); this.revision++;
+    const selected = dieLook(look ?? (p.id === id ? p.dieLook : undefined)).id;
+    if (p.dieLook === selected && p.id === id && p.name === name && JSON.stringify(p.avatar) === JSON.stringify(avatar)) return;
+    Object.assign(p, { id, name, avatar, dieLook: selected }); this.revision++;
   }
   removePlayer(id) {
     const p = this.players.find(p => p.id === id);
-    if (p) { p.id = null; p.name = BOT_NAMES[p.seat]; p.avatar = {}; this.revision++; }
+    if (p) { p.id = null; p.name = BOT_NAMES[p.seat]; p.avatar = {}; p.dieLook = 'crema'; this.revision++; }
   }
   // Lobby only: change the number of seats. Panas keep their seats while they
   // exist; one beyond the new count takes the first bot's seat.
@@ -151,7 +153,7 @@ export class LudoGame {
     if (!SEAT_CHOICES.includes(seats) || humans.length > seats) return false;
     if (seats !== this.players.length) {
       const players = Array.from({ length: seats }, (_, seat) => this.players[seat]?.id != null ? this.players[seat] : botSeat(seat));
-      for (const p of humans) if (p.seat >= seats) Object.assign(players.find(q => q.id === null), { id: p.id, name: p.name, avatar: p.avatar });
+      for (const p of humans) if (p.seat >= seats) Object.assign(players.find(q => q.id === null), { id: p.id, name: p.name, avatar: p.avatar, dieLook: p.dieLook });
       this.players = players; this.resetCounters(); this.revision++;
     }
     this.options = { ...this.options, seats };

@@ -44,8 +44,8 @@ export function createLudoScene(canvas, { onPiece, onCapture, onStarter, dieLook
   const reactions=createAnimationEvents({pawns,animator:getAnimator});
   const spotlight=createTurnSpotlight(scene,audio);
   const diePivot=new THREE.Group();let die=null;own.add(diePivot);
-  // The look lives on this device; the pivot keeps the die's pose through a swap.
-  function setDieLook(look){die?.userData.dispose();die?.removeFromParent();die=createLudoDie({look});die.position.y=-.215;diePivot.add(die);}
+  // Preserve the throw pose when the next player's die takes the table.
+  function setDieLook(look){if(die?.userData.look===(look||'crema'))return;die?.userData.dispose();die?.removeFromParent();die=createLudoDie({look});die.position.y=-.215;diePivot.add(die);}
   setDieLook(dieLook);
   // Five and six seats bring the star board: a wider table, chairs further out.
   function seatTable(count){
@@ -104,6 +104,7 @@ export function createLudoScene(canvas, { onPiece, onCapture, onStarter, dieLook
     p.captured=null;
   }
   function update(state,ownSeat){
+    setDieLook(state.players[state.phase==='lobby'?Math.max(0,ownSeat):state.turn]?.dieLook);
     seatTable(state.players.length);
     spotlight.update(state,ownSeat);
     reactions.update(state);moments.update(state);current=state;
@@ -289,6 +290,6 @@ export function createLudoScene(canvas, { onPiece, onCapture, onStarter, dieLook
   }
   function setView(value){top=!!value;}
   function projectPiece(seat,piece){const p=pawns.find(p=>p.seat===seat&&p.piece===piece),v=p.model.position.clone();v.y+=.2*p.model.scale.y;v.project(camera);const r=canvas.getBoundingClientRect();return{x:r.left+(v.x+1)*r.width/2,y:r.top+(1-v.y)*r.height/2};}
-  function dispose(){disposed=true;reactions.stop();animator?.dispose();audio.dispose();spotlight.dispose();moments.dispose();canvas.removeEventListener('click',click);canvas.removeEventListener('pointermove',hover);starter.dispose();pawns.forEach(p=>p.motion?.dispose());characters.forEach(c=>c.dispose());puffs.clear();waves.clear();disposeModel(own);stage.dispose();}
+  function dispose(){disposed=true;reactions.stop();animator?.dispose();audio.dispose();spotlight.dispose();moments.dispose();canvas.removeEventListener('click',click);canvas.removeEventListener('pointermove',hover);starter.dispose();pawns.forEach(p=>p.motion?.dispose());characters.forEach(c=>c.dispose());puffs.clear();waves.clear();die?.userData.dispose();disposeModel(own);stage.dispose();}
   return {flip:(seat,seed)=>tableFlip.start(seatAngle(seat,seats),seed),get flipping(){return tableFlip.active;},table,moments,reactions,spotlight,get celebrating(){return moments.celebrating||reactions.celebrating;},update,frame,setView,shakeDie,setDieLook,dispose,characters,pawns,starter,projectPiece,renderer,scene,camera,get die(){return diePivot;},get moving(){return pawns.some(p=>p.path||p.flight||p.motion);},get tossing(){return !!toss;},get landedAt(){return landedAt;}};
 }
