@@ -1320,3 +1320,10 @@ ellipsoids. `fauna/capybara/chiguire.js`, `fauna/farm/cochino.js` and
 `fauna/farm/pato.js` provide animated capybaras, pigs and ducks, registered in
 Studio's Fauna catalog. Consumers retain the `userData.tick(t)` animation and
 owned-resource disposal contract. See `procedural-farm-animals.md`.
+
+### Mango currency icon
+
+`engine/icons.js` exposes the canonical mango through `ICONS.mango` and
+`icon('mango')`. Its SVG wrapper uses `engine/mango.webp`, the same currency
+art as the hosted wallet. Keep the wrapper so existing SVG sizes keep working;
+do not draw separate wallet or reward mango icons in games.
