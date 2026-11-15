@@ -8,6 +8,8 @@ becomes the GitHub release's notes.
 
 ## Unreleased
 
+## 0.14.0 - 2026-11-15
+
 - **Los mangos tienen el mismo icono en toda la app.**
   Carteras, precios y premios usan la fruta ilustrada de Conuco.
 
