@@ -8,6 +8,9 @@ becomes the GitHub release's notes.
 
 ## Unreleased
 
+- **La portada del inicio se extiende detrás del menú.**
+  La ilustración cubre también la navegación en escritorio, sin la franja oscura ni cambios en las filas de juegos.
+
 ## 0.13.0 - 2026-11-15
 
 - **Ludo tiene 86 animaciones nuevas para cada momento de la partida.**

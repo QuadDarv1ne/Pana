@@ -265,7 +265,7 @@ footer {
 /* Illustrated launcher: the scene is the page, with a thumb rail above its lower edge. */
 body { min-height: 100dvh; background: var(--pk-night); }
 body[data-view="jugar"] { isolation: isolate; }
-.topbar { position: relative; z-index: 3; min-height: 88px; gap: 22px; }
+.topbar { position: relative; z-index: 4; min-height: 88px; gap: 22px; }
 body[data-view="jugar"] main { width: 100%; max-width: none; padding: 0; display: flex; }
 body[data-view="jugar"] .home { width: 100%; display: flex; flex-direction: column; gap: 0; padding: 0; min-height: calc(100dvh - 144px); }
 body[data-view="jugar"] .tu-pana, body[data-view="jugar"] .rooms-panel { display: none; }
@@ -422,9 +422,10 @@ body[data-view="jugar"] .home { min-height: 0; }
 /* Keep the selected game and its actions in view while the rows get more room. */
 body[data-view="jugar"] .home { overflow-anchor: none; }
 @media (min-width: 861px) {
-  body[data-view="jugar"] { --hero-collapse: 0; --hero-expanded: clamp(480px, 65dvh, 720px); --hero-height: calc(var(--hero-expanded) - (var(--hero-expanded) - 210px) * var(--hero-collapse)); }
-  body[data-view="jugar"] .feature { position: sticky; top: 0; z-index: 3; isolation: isolate; height: var(--hero-height); min-height: 0; flex: none; overflow: hidden; }
-  body[data-view="jugar"] .feature-art { height: 100%; }
+  body[data-view="jugar"] { --launcher-header-height: 88px; --hero-collapse: 0; --hero-expanded: clamp(480px, 65dvh, 720px); --hero-height: calc(var(--hero-expanded) - (var(--hero-expanded) - 210px) * var(--hero-collapse)); }
+  body[data-view="jugar"] .feature { position: sticky; top: 0; z-index: 3; isolation: isolate; height: var(--hero-height); min-height: 0; flex: none; overflow: visible; }
+  /* Let the cover continue behind navigation without moving the catalog. */
+  body[data-view="jugar"] .feature-art { top: calc(-1 * var(--launcher-header-height)); height: calc(100% + var(--launcher-header-height)); }
   body[data-view="jugar"] .feature-body { position: relative; padding-block: 20px; margin-block: auto 0; gap: 12px; }
   body[data-view="jugar"] .feature-name { font-size: calc(72px - 30px * var(--hero-collapse)); }
   body[data-view="jugar"].hero-compact .feature-tag,
@@ -432,4 +433,7 @@ body[data-view="jugar"] .home { overflow-anchor: none; }
   body[data-view="jugar"].hero-compact .feature-stats { display: none; }
   body[data-view="jugar"].hero-compact .feature-cta { margin-top: 0; }
   .game-browser { top: var(--hero-height); }
+}
+@media (min-width: 861px) and (max-height: 740px) {
+  body[data-view="jugar"] { --launcher-header-height: 76px; }
 }

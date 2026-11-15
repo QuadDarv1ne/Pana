@@ -15,8 +15,11 @@ Below the banner the games sit in one row per category (`data-row`), plus
 The document scrolls normally: never lock the body or put the catalog in a
 fixed-height strip. On desktop the banner stays pinned and shrinks as the page
 scrolls. Its expanded desktop height is 65vh (480–720px); upward scrolling
-expands it again anywhere in the catalog, including after recycling. The loop
-syncs the hero's scroll baseline after compensating row positions so that
+expands it again anywhere in the catalog, including after recycling.
+The desktop cover extends upward by the navigation height (88px, or 76px on
+short screens); keep the hero overflow visible and the navigation above it so
+the artwork reaches the page top without shifting the catalog.
+The loop syncs the hero's scroll baseline after compensating row positions so that
 internal movement cannot masquerade as an upward gesture. Cards widen after a 450 ms mouse hover and update that banner; keyboard
 focus previews immediately. Search, Favorites and Settings are tiles at the end.
 Search opens only on request and matches names, descriptions and categories
