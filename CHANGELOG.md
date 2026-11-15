@@ -8,6 +8,8 @@ becomes the GitHub release's notes.
 
 ## Unreleased
 
+## 0.13.1 - 2026-11-15
+
 - **La portada del inicio se extiende detrás del menú.**
   La ilustración cubre también la navegación en escritorio, sin la franja oscura ni cambios en las filas de juegos.
 
