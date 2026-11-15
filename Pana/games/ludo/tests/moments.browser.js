@@ -33,12 +33,12 @@ try {
  for(const page of [a,b])await page.waitForFunction(()=>ludoDebug.world.moments.history.includes('block'),null,{timeout:60000});
  assert.deepEqual(await a.evaluate(()=>ludoDebug.room.state.players[0].pieces),[0,0,-1,-1]);
  await a.screenshot({path:'art/ludo/moment-block.png'});
- // A real final-lane move uses the sprint, then reveals the actual ranking podium.
+ // A real final-lane move uses an authored arrival, then reveals the actual ranking podium.
  await a.evaluate(()=>{const g=ludoDebug.room.game;g.turnPause=null;g.round++;g.turn=0;g.die=1;g.players[0].pieces=[56,56,56,55];g.revision++;ludoDebug.room.publish();});
  await b.waitForFunction(()=>ludoDebug.room.state.players[0].pieces[3]===55);
  await a.evaluate(()=>ludoDebug.room.action('move',{piece:3}));
  for(const page of [a,b]){
-   await page.waitForFunction(()=>ludoDebug.world.pawns[3].lastMotion==='sprint');
+   await page.waitForFunction(()=>['alfombra','cohete','sudada'].includes(ludoDebug.world.pawns[3].lastMotion));
    await page.waitForFunction(()=>ludoDebug.world.moments.history.includes('podium'),null,{timeout:60000});
  }
  await a.locator('#results').waitFor({state:'visible',timeout:60000});

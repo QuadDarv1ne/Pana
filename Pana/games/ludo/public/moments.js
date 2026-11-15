@@ -16,7 +16,7 @@ export function createLudoMoments(root,pawns,audio,board=()=>null) {
   function update(next){
     restore();if(previous&&(next.round!==previous.round||next.phase==='lobby'))clear();
     if(!previous||next.revision!==previous.revision){idle=0;slept=false;}
-    for(const event of transitionMoments(previous,next))if(event.kind!=='turn')enqueue(event);
+    for(const event of transitionMoments(previous,next))if(event.kind!=='turn'&&!(event.kind==='nomoves'&&next.players[event.seat].pieces.every(p=>p<0)))enqueue(event);
     state=next;previous={round:next.round,revision:next.revision,phase:next.phase,turn:next.turn,rng:next.rng};
   }
   function land(p){for(const event of landingMoments(state,p.seat,p.piece))enqueue(event);}

@@ -288,3 +288,50 @@ Studio still exposes the authored turn reaction.
 Yard cells are symmetric around the colored panel center (2.5, 11.5 before
 rotation). The cloud caption sits above the full canopy, separately from the
 raindrops and pawn faces; the live scene and Studio use the same visual.
+
+## Expanded animation library
+
+The Studio v2/v3 references add 86 variants alongside the original 21:
+18 entrances, 32 camino motions, 15 captures, six stranded-yard reactions,
+three dice throws, three safe-square interactions, three arrivals, three
+victory scenes, two idle reactions and the third-six penalty. Version 3
+contains all version 2 additions; duplicate scenes are registered only once.
+`animation-catalog.js` owns their names, event categories and deterministic
+selection. Selection uses snapshot RNG/revision and pawn identity without
+advancing the game RNG. Partner tricks require real nearby pieces; the red
+carpet requires the last piece home. The original camino motions still appear.
+
+`authored-library.js` and `capture-library.js` retain the reference poses and
+props. `authored-motion.js` supplies proxies for the real pawns, real awarded
+paths, yard slots, capture destinations and the winner's saved Pana. Proxy
+coordinates keep the authored board at y=.21 while the game board sits at
+y=1.67. Demo step counts resample the awarded path, never award extra cells.
+Home approaches use each scene's own authored span (two, three or four
+segments). Crowded endpoints retain their actual position and scale.
+
+There is one reusable prop library per board. The bounded FX pool samples the
+current animation frame, rather than accumulating emissions, and supports
+backward Studio scrubbing. Captions have Spanish and English translations.
+Sound cues cross normalized timeline markers and use Ludo's existing shared
+audio volume/voice budget; no separate AudioContext or delayed timers.
+Interruption restores pawn transforms, visibility, tint and the die, clears
+props and stops the old sampler. Board resizing and teardown dispose the pool.
+
+Captures keep a victim's `flight` marker with `authored: true` until the mover's
+sampler completes. The frame loop leaves those victims to that sampler. Extra
+victims on the same cell also fly back to their own yards; completion clears
+all markers and snaps every participant to its authoritative target.
+
+`animation-events.js` queues reactions from real transitions and landings.
+It never replays an initial snapshot. A pause-only revision does not cancel a
+ceremony; a new action or round does. Missed throws reserve `REACTION_DURATION`
+(3.2 seconds) after the physical throw via `missedRollDelay`, while forced
+successful moves retain the original `automaticMoveDelay`. Movement reserves
+at least 2.8 seconds for its authored scene. Pause subtraction rounds to
+nanoseconds so a floating-point residue cannot add an extra host tick.
+
+`authored-preview.js` is the factory for all 86 new `ludo-<style>` Studio
+entries. `authored.browser.js` scrubs every variant on four-, five- and
+six-player boards, including reverse sampling, crowded endpoints, finite
+geometry and interruption cleanup. `authored-previews.browser.js` builds and
+renders every registered preview with the actual runtime.

@@ -1,4 +1,5 @@
 import { object } from './objects.js';
+import { ANIMATION_NAMES } from '/g/ludo/animation-catalog.js';
 export const LUDO = [
   {id:'ludo-board',name:'Tablero de Ludo',factory:'createLudoBoard',description:'Tablero de madera, cuatro patios y casillas seguras. Superficie a 0,12 m; lado de 5,65 m.'},
   {id:'ludo-board-5',name:'Tablero de Ludo · 5 jugadores',factory:'createLudoBoard',previewOptions:{seats:5},description:'Tablero redondo en estrella: cinco brazos, cinco patios y pasillos privados. Superficie a 0,12 m; diámetro de 6,93 m.'},
@@ -7,6 +8,13 @@ export const LUDO = [
   {id:'ludo-die',name:'Dado de Ludo',factory:'createLudoDie',description:'Dado con seis caras y puntos. Origen en la base; lado de 0,43 m.'},
   {id:'ludo-die-mango',name:'Dado de mango',factory:'createLudoDie',previewOptions:{look:'mango'},description:'El dado que se compra con mangos: caras de mango con filo claro. Origen en la base; lado de 0,43 m.'},
 ].map(def=>object({...def,source:'/g/ludo/board-model.js',category:'Objetos',usedBy:['Ludo'],dependencies:['/g/ludo/rules.js','/g/ludo/die-shop.js','/g/ludo/studio-finish.js','/engine/models/props/game-table.js']}));
+
+for(const [style,name] of Object.entries(ANIMATION_NAMES)) {
+  LUDO.push(object({id:`ludo-${style}`,name:`Ludo · ${name}`,category:'Objetos',usedBy:['Ludo'],
+    description:'Animación de la partida, adaptada a sus fichas y casillas reales.',
+    source:'/g/ludo/authored-preview.js',factory:'createAuthoredPreview',previewOptions:{style},
+    dependencies:['/g/ludo/authored-motion.js','/g/ludo/authored-library.js','/g/ludo/capture-library.js','/g/ludo/animation-fx.js','/g/ludo/animation-catalog.js','/g/ludo/board-model.js','/g/ludo/rules.js','/g/ludo/motion-props.js','/g/ludo/studio-finish.js','/engine/models/props/game-table.js']}));
+}
 
 for(const [style,name] of [['highfive','Chócala'],['slip','Resbalón'],['rollbarrel','Rodar'],['moonwalk','Moonwalk'],['spring','Resorte'],['dodge','Esquivar'],['piggy','Caballito'],['umbrella','Paraguas'],['tunnel','Túnel'],['gum','Chicle']]) {
   LUDO.push(object({id:`ludo-${style}`,name:`Ludo · ${name}`,category:'Objetos',usedBy:['Ludo'],

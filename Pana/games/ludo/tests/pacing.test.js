@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { LudoGame } from '../public/rules.js';
-import { automaticMoveDelay, presentedState, pauseTick, hostTick, createLandingGate, rollKey, LANDING_WAIT, RESULT_HOLD, BEAT_TICK, HOP, FLIGHT, motionDuration } from '../public/dice-timing.js';
+import { automaticMoveDelay, missedRollDelay, presentedState, pauseTick, hostTick, createLandingGate, rollKey, LANDING_WAIT, RESULT_HOLD, BEAT_TICK, HOP, FLIGHT, motionDuration } from '../public/dice-timing.js';
 
 test('missed throws retain the acting seat and reject the next player until the result settles',()=>{
   for(const power of [0,.5,1]){
@@ -10,7 +10,7 @@ test('missed throws retain the acting seat and reject the next player until the 
     assert.equal(presentedState(g).turn,0);
     const restored=LudoGame.restore(g.snapshot(),new Map([['a',{id:'a',name:'A'}],['b',{id:'b',name:'B'}]]));
     assert.equal(restored.accept('b',{seq:1,revision:restored.revision,action:'roll'},'a'),false);
-    assert.equal(restored.stepPause(automaticMoveDelay(power)-.01),false);
+    assert.equal(restored.stepPause(missedRollDelay(power)-.01),false);
     assert.equal(restored.stepPause(.02),true);assert.equal(presentedState(restored).turn,1);
     assert.equal(restored.accept('b',{seq:1,revision:restored.revision,action:'roll'},'a'),true);
   }
@@ -52,7 +52,7 @@ test('a missed roll holds its result after the last client lands, however late',
     }
     return now;
   };
-  const delay=automaticMoveDelay(.5),flight=delay-RESULT_HOLD;
+  const delay=missedRollDelay(.5),flight=automaticMoveDelay(.5)-RESULT_HOLD;
   for(const spacing of [.05,.1,.5,2,4]){
     for(const late of [0,1,2.7,5]){
       const last=flight+late;
@@ -64,7 +64,7 @@ test('a missed roll holds its result after the last client lands, however late',
   assert.ok(Math.abs(hold({lands:{a:flight,b:flight},spacing:.05})-delay)<=.15);
   // A client that never reports costs the wait and then lets go.
   const frozen=hold({lands:{a:flight},members:['a','b'],spacing:.1});
-  assert.ok(frozen>=flight+LANDING_WAIT&&frozen<=flight+LANDING_WAIT+RESULT_HOLD+.5,`frozen client: ${frozen}s`);
+  assert.ok(frozen>=delay-RESULT_HOLD+LANDING_WAIT&&frozen<=delay+LANDING_WAIT+.5,`frozen client: ${frozen}s`);
 });
 
 test('the landing gate leaves other pauses alone and forgets the previous roll',()=>{
@@ -92,5 +92,5 @@ test('third six forfeits hold the throwing seat before handing over',()=>{
   const g=new LudoGame(1);g.phase='playing';g.sixes=2;g.entryMisses[0]=g.entryLimits[0]=3;
   g.roll(1);assert.equal(g.lastDie,6);assert.equal(g.turn,1);
   assert.equal(presentedState(g).turn,0);assert.equal(g.autoMove,null);
-  assert.equal(g.turnPause.remaining,automaticMoveDelay(1));
+  assert.equal(g.turnPause.remaining,missedRollDelay(1));
 });

@@ -66,6 +66,13 @@ export function createLudoSounds(sound, { audible = () => true, fetchAudio = glo
       else if (kind === 'suspense') play('hop', .75, .07);
       else chime(kind === 'podium' ? [1, 1.25, 1.5, 2] : [1, 1.5], .1);
     },
+    cue(name) {
+      if(['tap','hop','land','clack','click','chug','knock'].includes(name))play('hop',name==='land'?.8:1.15,.08);
+      else if(['splat','bonk','clap','pum','strike'].includes(name))play('splat',1,.13);
+      else if(['stretch','inflate','gulp','sad','achu','fart'].includes(name))play('squish',.8,.1);
+      else if(['tada','goal'].includes(name))chime([1,1.25,1.5],.1);
+      else play('swish',1.1,.08);
+    },
     trick(style) {
       if (['gum', 'slip'].includes(style)) play('squish', style === 'gum' ? .8 : 1.15, .16);
       else if (style === 'highfive') play('splat', 1.3, .13);

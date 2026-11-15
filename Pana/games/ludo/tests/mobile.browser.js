@@ -34,8 +34,8 @@ try{
   assert.ok(await m.locator('#world').evaluate(el=>el.getBoundingClientRect().height>250));
   await m.evaluate(()=>ludoDebug.room.cut());await m.locator('#practice').waitFor({state:'visible'});await m.locator('#practice').click();
   assert.ok(await m.locator('#invite').isDisabled());await m.locator('#start').click();assert.equal(await m.evaluate(()=>ludoDebug.room.state.phase),'starter');
-  // Build the six models (three boards, the cream and mango dice, the pawn) and twenty-one shared animation previews through the real catalog.
-  assert.equal(await m.evaluate(async()=>{const {ASSETS}=await import('/studio/catalog.js');for(const asset of ASSETS.filter(a=>a.id.startsWith('ludo-'))){const {group}=await asset.build();if(!group.children.length)throw Error('empty model');group.userData.dispose();}return ASSETS.filter(a=>a.id.startsWith('ludo-')).length;}),27);
+  // Build the six models (three boards, the cream and mango dice, the pawn) and 107 shared animation previews through the real catalog.
+  assert.equal(await m.evaluate(async()=>{const {ASSETS}=await import('/studio/catalog.js');for(const asset of ASSETS.filter(a=>a.id.startsWith('ludo-'))){const {group}=await asset.build();if(!group.children.length)throw Error('empty model');group.userData.dispose();}return ASSETS.filter(a=>a.id.startsWith('ludo-')).length;}),113);
   const response=await m.request.get(`${base}/api/games`);const listing=await response.json();assert.ok(JSON.stringify(listing).includes('Ludo'));
   await m.goto(base);await m.getByRole('heading',{name:'Ludo',exact:true}).waitFor();
   console.log('ok: portrait and landscape touch, local fallback, Studio models and hub discovery');

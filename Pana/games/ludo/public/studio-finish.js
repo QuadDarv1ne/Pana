@@ -83,6 +83,7 @@ export function poseFace(pawn, time, mood = 'idle', look = 0) {
     face.pupils[i].position.set(THREE.MathUtils.clamp(look,-1,1)*.013,0,.024);
     face.pupils[i].scale.setScalar(surprised?.65:1);
   });
+  face.smile.scale.setScalar(1);face.open.scale.setScalar(1);
   face.smile.visible = !surprised; face.open.visible = surprised;
   face.smile.rotation.z = mood === 'sad' ? 0 : Math.PI;
 }

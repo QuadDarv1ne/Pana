@@ -217,7 +217,7 @@ export class LudoGame {
       this.event.push(line(locKey('Sin movimientos.')));
       if (this.die === 6) this.rollAgain(); else this.nextTurn();
     }
-    if (!this.die) this.turnPause = {seat:this.toss.seat, kind:'roll', remaining:automaticMoveDelay(this.toss.power)};
+    if (!this.die) this.turnPause = {seat:this.toss.seat, kind:'roll', remaining:missedRollDelay(this.toss.power)};
     const moves = legalMoves(this);
     // Choosing between identical yard pieces does not change the outcome.
     if (moves.length === 1 || moves.length && moves.every(i => pieces[i] < 0)) {
@@ -240,8 +240,9 @@ export class LudoGame {
   }
   stepPause(dt) {
     if (!this.turnPause) return false;
-    this.turnPause.remaining -= Math.max(0, dt);
-    if (this.turnPause.remaining > 0) return false;
+    // Keep a rounding residue from becoming an extra host tick at the beat.
+    this.turnPause.remaining = Math.round((this.turnPause.remaining - Math.max(0, dt))*1e9)/1e9;
+    if (this.turnPause.remaining > 1e-9) return false;
     this.turnPause = null; this.revision++; return true;
   }
   stepAutomatic(dt) {
@@ -312,4 +313,4 @@ export function eventText(event) {
 import { createStarter, starterInput, stepStarter, starterDone, starterResult } from '../../../engine/play/quien-empieza-rules.js';
 import { cleanPower } from '../../../engine/play/dice-throw.js';
 
-import { automaticMoveDelay, movePause } from './dice-timing.js';
+import { automaticMoveDelay, missedRollDelay, movePause } from './dice-timing.js';

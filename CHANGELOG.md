@@ -8,6 +8,9 @@ becomes the GitHub release's notes.
 
 ## Unreleased
 
+- **Ludo tiene 86 animaciones nuevas para cada momento de la partida.**
+  Las fichas salen con globos, patinan, viajan en ovni y capturan con quince estilos; también reaccionan al dado y celebran. Todas tienen una vista previa en Pana Studio y respetan las casillas de la partida.
+
 ## 0.12.0 - 2026-11-14
 
 - **Los juegos pueden exigir una orientación de pantalla.**
